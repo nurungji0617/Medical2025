@@ -48,4 +48,26 @@ if selected:
     st.success(f"선택한 약품목:{selected}-> 약국 {len(result)}곳")
     
     st.dataframe(result[['병원명','주소','전화번호','수거약품목']],use_container_width=True)
+
+    st.subheader("🍭 약국 위치 지도")
     
+    coords = result.dropna(subset=['위도','경도'])
+    
+    if not coords.empty:
+        m=folium.Map()
+        
+        bounds = [[coords['위도'].min(),coords['경도'].min()],
+            [coords['위도'].max(),coords['경도'].max()]
+        ]
+        m.fit_bounds(bounds)
+        for _, row in coords.iterrows():
+            folium.Marker(
+                [row['위도'],row['경도']],
+                popup=f"{row['병원명']}<br>{row["수거약품목"]}",
+                tooltip=row['병원명']
+            ).add_to(m)
+        folium_static(m,width=800,height=500)
+    else:
+        st.info("위치정보가 없습니다!")
+else:
+    st.info("위쪽에서 수거 약품목을 선택해주세요!")
